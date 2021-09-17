@@ -67,7 +67,7 @@ struct VersionInformationResponse:
 
 struct ConnectedControllersRequest:
   -- Incoming
-  0 [+4]                UInt      number_of_ports
+  0 [+4]  UInt      number_of_ports
     -- Amount of ports you should report about. Always less than 5.
 
   4 [+5]  UInt:8[]  slot
@@ -82,7 +82,7 @@ struct ConnectedControllersResponse:
 
 struct TouchData:
   -- Touch data structure
-  0 [+1]  UInt active
+  0 [+1]  UInt  active
     -- Is touch active (1 if active, else 0)
 
   1 [+1]  UInt  id
