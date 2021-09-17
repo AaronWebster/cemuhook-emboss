@@ -1,0 +1,261 @@
+[$default byte_order: "LittleEndian"]
+[(cpp) namespace: "cemuhook_emboss"]
+
+
+enum EventType:
+  VERSION_INFORMATION   = 0x100000
+  CONNECTED_CONTROLLERS = 0x100001
+  CONTROLLER_DATA       = 0x100002
+
+
+enum BatteryStatus:
+  NOT_APPLICABLE = 0x00
+  DYING          = 0x01
+  LOW            = 0x02
+  MEDIUM         = 0x03
+  HIGH           = 0x04
+  FULL           = 0x05
+  CHARGING       = 0xEE
+  CHARGED        = 0xEF
+
+
+enum ConnectionType:
+  NOT_APPLICABLE = 0
+  USB            = 1
+  BLUETOOTH      = 2
+
+
+enum DeviceModel:
+  NOT_APPLICABLE             = 0
+  NO_OR_PARTIAL_GYRO         = 1
+  FULL_GYRO                  = 2
+  GYRO_EXISTS_BUT_DO_NOT_USE = 3
+
+
+enum SlotState:
+  NOT_CONNECTED = 0
+  RESERVED      = 1
+  CONNECTED     = 1
+
+
+struct ResponseHeader:
+  -- Controller data
+  0  [+1]  UInt            slot_number
+    -- Slot you're reporting about. Must be the same as byte value you read.
+
+  1  [+1]  SlotState       slot_state
+    -- Slot state: 0 if not connected, 1 if reserved (?), 2 if connected.
+
+  2  [+1]  DeviceModel     device_model
+    -- Device model: 0 if not applicable, 1 if no or partial gyro 2 for full gyro. Value 3 exist but should not be used (go with VR, guys).
+
+  3  [+1]  ConnectionType  connection_type
+    -- Connection type: 0 if not applicable, 1 for USB, 2 for bluetooth.
+
+  4  [+6]  UInt:8[]        mac_address
+    -- MAC address of device. It's used to detect same device between launches. Zero out if not applicable.
+
+  10 [+1]  BatteryStatus   battery_status
+    -- Battery status. See below for possible values.
+
+
+struct VersionInformationResponse:
+  -- Protocol version information
+  0 [+2]  UInt  version
+    -- Maximal protocol version supported by your application.
+
+
+struct ConnectedControllersRequest:
+  -- Incoming
+  0 [+4]                UInt      number_of_ports
+    -- Amount of ports you should report about. Always less than 5.
+
+  4 [+5]  UInt:8[]  slot
+    -- Each byte represent number of slot you should report about. Count of
+    -- bytes here is determined by value above. Each value is less than 4.
+
+
+struct ConnectedControllersResponse:
+  0  [+11]  ResponseHeader  header
+  11 [+1]   UInt            reserved
+
+
+struct TouchData:
+  -- Touch data structure
+  0 [+1]  UInt active
+    -- Is touch active (1 if active, else 0)
+
+  1 [+1]  UInt  id
+    -- Touch id (should be the same for one continious touch)
+
+  2 [+2]  UInt  x
+    -- Touch X position
+
+  4 [+2]  UInt  y
+    -- Touch Y position
+
+
+enum RegistrationAction:
+  ALL        = 0
+  SLOT_BASED = 1
+  MAC_BASED  = 2
+
+
+struct ControllerDataRequest:
+  -- Incoming packet structure
+  0 [+1]  RegistrationAction  registration_action
+  1 [+1]  UInt                slot
+  2 [+6]  UInt:8[]            mac_address
+
+
+struct ControllerDataResponse:
+  0  [+11]        ResponseHeader  header
+  11 [+1]         UInt            connected
+    -- Is controller connected (1 if connected, 0 if not)
+
+  12 [+4]         UInt            packet_number
+    -- Packet number (for this client)
+
+  16 [+1]  bits:
+    0  [+1]       Flag            d_pad_left
+    1  [+1]       Flag            d_pad_down
+    2  [+1]       Flag            d_pad_right
+    3  [+1]       Flag            d_pad_up
+    4  [+1]       Flag            options
+    5  [+1]       Flag            r3
+    6  [+1]       Flag            l3
+    7  [+1]       Flag            share
+
+  17 [+1]  bits:
+    0  [+1]       Flag            y
+    1  [+1]       Flag            b
+    2  [+1]       Flag            a
+    3  [+1]       Flag            x
+    4  [+1]       Flag            r1
+    5  [+1]       Flag            l1
+    6  [+1]       Flag            r2
+    7  [+1]       Flag            l2
+
+  18 [+1]         UInt            ps_button
+    -- PS Button (unused)
+
+  19 [+1]         UInt            touch_button
+    -- Touch Button (unused)
+
+  20 [+1]         UInt            left_stick_x
+    -- Left stick X (plus rightward)
+
+  21 [+1]         UInt            left_stick_y
+    -- Left stick Y (plus upward)
+
+  22 [+1]         UInt            right_stick_x
+    -- Right stick X (plus rightward)
+
+  23 [+1]         UInt            right_stick_y
+    -- Right stick Y (plus upward)
+
+  24 [+1]         UInt            analog_d_pad_left
+    -- Analog D-Pad Left
+
+  25 [+1]         UInt            analog_d_pad_down
+    -- Analog D-Pad Down
+
+  26 [+1]         UInt            analog_d_pad_right
+    -- Analog D-Pad Right
+
+  27 [+1]         UInt            analog_d_pad_up
+    -- Analog D-Pad Up
+
+  28 [+1]         UInt            analog_y
+    -- Analog Y
+
+  29 [+1]         UInt            analog_b
+    -- Analog B
+
+  30 [+1]         UInt            analog_a
+    -- Analog A
+
+  31 [+1]         UInt            analog_x
+    -- Analog X
+
+  32 [+1]         UInt            analog_r1
+    -- Analog R1
+
+  33 [+1]         UInt            analog_l1
+    -- Analog L1
+
+  34 [+1]         UInt            analog_r2
+    -- Analog R2
+
+  35 [+1]         UInt            analog_l2
+    -- Analog L2
+
+  36 [+6]         TouchData       first_touch
+    -- First touch
+
+  42 [+6]         TouchData       second_touch
+    -- Second touch
+
+  48 [+8]         UInt            timestamp_us
+    -- Motion data timestamp in microseconds, update only with accelerometer (but not gyro only) changes
+
+  56 [+4]         Float           accel_x
+    -- Accelerometer X axis in g's
+
+  60 [+4]         Float           accel_y
+    -- Accelerometer Y axis in g's
+
+  64 [+4]         Float           accel_z
+    -- Accelerometer Z axis in g's
+
+  68 [+4]         Float           gyro_pitch
+    -- Gyroscope pitch in degrees per second
+
+  72 [+4]         Float           gyro_yaw
+    -- Gyroscope yaw in degrees per second
+
+  76 [+4]         Float           gyro_roll
+    -- Gyroscope roll in degrees per second
+
+
+struct PacketHeader:
+  0  [+4]  UInt:8[]   magic
+    -- Magic string — DSUS if it's message by server (you), DSUC if by client (cemuhook).
+
+  4  [+2]  UInt       version
+    -- Protocol version used in message. Currently 1001.
+
+  6  [+2]  UInt       length
+    -- Length of packet without header. Drop packet if it's too short, truncate if it's too long.
+
+  8  [+4]  UInt       crc
+    -- CRC32 of whole packet while this field was zeroed out. Be careful with endianness here!
+
+  14 [+4]  UInt       sender_id
+    -- Client or server ID who sent this packet. Should stay the same on one run. Can be randomly generated on startup.
+
+  16 [+4]  EventType  event_type
+    -- Not actually part of header so it counts as length. Event type. Read below to learn possible ones.
+
+
+struct ResponsePacket:
+  -- Response packet
+  0  [+20]                                             PacketHeader                  header
+  if header.event_type == EventType.VERSION_INFORMATION:
+    20 [+VersionInformationResponse.$size_in_bytes]    VersionInformationResponse    version_information
+
+  if header.event_type == EventType.CONNECTED_CONTROLLERS:
+    20 [+ConnectedControllersResponse.$size_in_bytes]  ConnectedControllersResponse  connected_controllers
+
+  if header.event_type == EventType.CONTROLLER_DATA:
+    20 [+ControllerDataResponse.$size_in_bytes]        ControllerDataResponse        controller_data
+
+
+struct RequestPacket:
+  -- Request packet
+  0  [+20]                                            PacketHeader                 header
+  if header.event_type == EventType.CONNECTED_CONTROLLERS:
+    20 [+ConnectedControllersRequest.$size_in_bytes]  ConnectedControllersRequest  connected_controllers
+
+  if header.event_type == EventType.CONTROLLER_DATA:
+    20 [+ControllerDataRequest.$size_in_bytes]        ControllerDataRequest        controller_data
