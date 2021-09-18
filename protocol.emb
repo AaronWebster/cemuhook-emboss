@@ -2,7 +2,16 @@
 [(cpp) namespace: "cemuhook_emboss"]
 
 
-enum EventType:
+enum Sender:
+  -- Magic string
+  INVALID = 0
+  SERVER  = 0x53555344  -- ASCII string 'DSUS'
+  CLIENT  = 0x43555344  -- ASCII string 'DSUC'
+
+
+enum MessageType:
+  -- Message type
+  INVALID               = 0x000000
   VERSION_INFORMATION   = 0x100000
   CONNECTED_CONTROLLERS = 0x100001
   CONTROLLER_DATA       = 0x100002
@@ -40,6 +49,7 @@ enum SlotState:
 
 struct ResponseHeader:
   -- Controller data
+
   0  [+1]  UInt            slot_number
     -- Slot you're reporting about. Must be the same as byte value you read.
 
@@ -47,13 +57,15 @@ struct ResponseHeader:
     -- Slot state: 0 if not connected, 1 if reserved (?), 2 if connected.
 
   2  [+1]  DeviceModel     device_model
-    -- Device model: 0 if not applicable, 1 if no or partial gyro 2 for full gyro. Value 3 exist but should not be used (go with VR, guys).
+    -- Device model: 0 if not applicable, 1 if no or partial gyro 2 for full
+    -- gyro. Value 3 exist but should not be used (go with VR, guys).
 
   3  [+1]  ConnectionType  connection_type
     -- Connection type: 0 if not applicable, 1 for USB, 2 for bluetooth.
 
   4  [+6]  UInt:8[]        mac_address
-    -- MAC address of device. It's used to detect same device between launches. Zero out if not applicable.
+    -- MAC address of device. It's used to detect same device between launches.
+    -- Zero out if not applicable.
 
   10 [+1]  BatteryStatus   battery_status
     -- Battery status. See below for possible values.
@@ -197,7 +209,8 @@ struct ControllerDataResponse:
     -- Second touch
 
   48 [+8]         UInt            timestamp_us
-    -- Motion data timestamp in microseconds, update only with accelerometer (but not gyro only) changes
+    -- Motion data timestamp in microseconds, update only with accelerometer
+    -- (but not gyro only) changes
 
   56 [+4]         Float           accel_x
     -- Accelerometer X axis in g's
@@ -218,44 +231,45 @@ struct ControllerDataResponse:
     -- Gyroscope roll in degrees per second
 
 
-struct PacketHeader:
-  0  [+4]  UInt:8[]   magic
-    -- Magic string — DSUS if it's message by server (you), DSUC if by client (cemuhook).
+struct Message:
+  0  [+4]                                              Sender                        sender
+    -- Magic string — DSUS if it's message by server (you), DSUC if by client
+    -- (cemuhook).
 
-  4  [+2]  UInt       version
+  let protocol_version = 1001
+
+  4  [+2]                                              UInt                          version
     -- Protocol version used in message. Currently 1001.
 
-  6  [+2]  UInt       length
-    -- Length of packet without header. Drop packet if it's too short, truncate if it's too long.
+  6  [+2]                                              UInt                          length
+    -- Length of packet without header. Drop packet if it's too short, truncate
+    -- if it's too long.
 
-  8  [+4]  UInt       crc
-    -- CRC32 of whole packet while this field was zeroed out. Be careful with endianness here!
+  8  [+4]                                              UInt                          crc
+    -- CRC32 of whole packet while this field was zeroed out. Be careful with
+    -- endianness here!
 
-  14 [+4]  UInt       sender_id
-    -- Client or server ID who sent this packet. Should stay the same on one run. Can be randomly generated on startup.
+  14 [+4]                                              UInt                          sender_id
+    -- Client or server ID who sent this packet. Should stay the same on one
+    -- run. Can be randomly generated on startup.
 
-  16 [+4]  EventType  event_type
-    -- Not actually part of header so it counts as length. Event type. Read below to learn possible ones.
+  16 [+4]                                              MessageType                   message_type
+    -- Not actually part of header so it counts as length. Event type. Read
+    -- below to learn possible ones.
 
+  if event_type == EventType.VERSION_INFORMATION && sender == Sender.SERVER:
+    20 [+VersionInformationResponse.$size_in_bytes]    VersionInformationResponse    version_information_response
 
-struct ResponsePacket:
-  -- Response packet
-  0  [+20]                                             PacketHeader                  header
-  if header.event_type == EventType.VERSION_INFORMATION:
-    20 [+VersionInformationResponse.$size_in_bytes]    VersionInformationResponse    version_information
+  # -- if event_type == EventType.VERSION_INFORMATION && sender == Sender.CILENT:
 
-  if header.event_type == EventType.CONNECTED_CONTROLLERS:
-    20 [+ConnectedControllersResponse.$size_in_bytes]  ConnectedControllersResponse  connected_controllers
+  if event_type == EventType.CONNECTED_CONTROLLERS && sender == Sender.SERVER:
+    20 [+ConnectedControllersResponse.$size_in_bytes]  ConnectedControllersResponse  connected_controllers_response
 
-  if header.event_type == EventType.CONTROLLER_DATA:
-    20 [+ControllerDataResponse.$size_in_bytes]        ControllerDataResponse        controller_data
+  if event_type == EventType.CONNECTED_CONTROLLERS && sender == Sender.CILENT:
+    20 [+ConnectedControllersRequest.$size_in_bytes]   ConnectedControllersRequest   connected_controllers_request
 
+  if event_type == EventType.CONTROLLER_DATA && sender == Sender.SERVER:
+    20 [+ControllerDataRequest.$size_in_bytes]         ControllerDataResponse        controller_data_response
 
-struct RequestPacket:
-  -- Request packet
-  0  [+20]                                            PacketHeader                 header
-  if header.event_type == EventType.CONNECTED_CONTROLLERS:
-    20 [+ConnectedControllersRequest.$size_in_bytes]  ConnectedControllersRequest  connected_controllers
-
-  if header.event_type == EventType.CONTROLLER_DATA:
-    20 [+ControllerDataRequest.$size_in_bytes]        ControllerDataRequest        controller_data
+  if event_type == EventType.CONTROLLER_DATA && sender == Sender.CILENT:
+    20 [+ControllerDataRequest.$size_in_bytes]         ControllerDataRequest         controller_data_request

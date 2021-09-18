@@ -18,7 +18,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
     name = "com_google_emboss",
+    commit = "32f309e34d93483644fdfce5fc3dede36aed66c0",
     remote = "https://github.com/google/emboss",
-    branch= "master", 
-    shallow_since = "",
+    shallow_since = "1630711578 -0700",
 )

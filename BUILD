@@ -18,4 +18,13 @@ licenses(["notice"])  # Apache 2.0
 
 load("@com_google_emboss//:build_defs.bzl", "emboss_cc_library")
 
-emboss_cc_library( name = "packets", srcs = ["packets.emb"],)
+emboss_cc_library(
+    name = "protocol_emboss",
+    srcs = ["protocol.emb"],
+)
+
+cc_binary(
+    name = "protocol_test_main",
+    srcs = ["protocol_test_main.cc"],
+    deps = [":protocol_emboss"],
+)
