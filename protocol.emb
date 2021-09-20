@@ -257,19 +257,19 @@ struct Message:
     -- Not actually part of header so it counts as length. Event type. Read
     -- below to learn possible ones.
 
-  if event_type == EventType.VERSION_INFORMATION && sender == Sender.SERVER:
+  if message_type == MessageType.VERSION_INFORMATION && sender == Sender.SERVER:
     20 [+VersionInformationResponse.$size_in_bytes]    VersionInformationResponse    version_information_response
 
-  # -- if event_type == EventType.VERSION_INFORMATION && sender == Sender.CILENT:
+  # -- if message_type == MessageType.VERSION_INFORMATION && sender == Sender.CLIENT:
 
-  if event_type == EventType.CONNECTED_CONTROLLERS && sender == Sender.SERVER:
+  if message_type == MessageType.CONNECTED_CONTROLLERS && sender == Sender.SERVER:
     20 [+ConnectedControllersResponse.$size_in_bytes]  ConnectedControllersResponse  connected_controllers_response
 
-  if event_type == EventType.CONNECTED_CONTROLLERS && sender == Sender.CILENT:
+  if message_type == MessageType.CONNECTED_CONTROLLERS && sender == Sender.CLIENT:
     20 [+ConnectedControllersRequest.$size_in_bytes]   ConnectedControllersRequest   connected_controllers_request
 
-  if event_type == EventType.CONTROLLER_DATA && sender == Sender.SERVER:
-    20 [+ControllerDataRequest.$size_in_bytes]         ControllerDataResponse        controller_data_response
+  if message_type == MessageType.CONTROLLER_DATA && sender == Sender.SERVER:
+    20 [+ControllerDataResponse.$size_in_bytes]        ControllerDataResponse        controller_data_response
 
-  if event_type == EventType.CONTROLLER_DATA && sender == Sender.CILENT:
+  if message_type == MessageType.CONTROLLER_DATA && sender == Sender.CLIENT:
     20 [+ControllerDataRequest.$size_in_bytes]         ControllerDataRequest         controller_data_request

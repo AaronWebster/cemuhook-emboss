@@ -1,4 +1,4 @@
-#include "crc32.h"
+#include "crc32_engine.h"
 
 #include <memory>
 #include <vector>
@@ -28,7 +28,7 @@ class Crc32EngineImpl final : public Crc32Engine {
 
   uint32_t Foo(const std::vector<uint8_t>& bytes) override {
     uint32_t crc = 0xffffffff;
-    for (int i = 0; i < bytes.size(); ++i) {
+    for (std::size_t i = 0; i < bytes.size(); ++i) {
       uint8_t index = static_cast<uint8_t>(((crc)&0xff) ^ bytes[i]);
       crc = static_cast<uint32_t>((crc >> 8) ^ table_[index]);
     }

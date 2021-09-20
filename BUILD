@@ -23,6 +23,12 @@ emboss_cc_library(
     srcs = ["protocol.emb"],
 )
 
+cc_library(
+    name = "crc32_engine",
+    srcs = ["crc32_engine.cc"],
+    hdrs = ["crc32_engine.h"],
+)
+
 cc_binary(
     name = "protocol_test_main",
     srcs = ["protocol_test_main.cc"],

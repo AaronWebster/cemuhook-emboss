@@ -1,5 +1,5 @@
-#ifndef CEMUHOOK_EMBOSS_CRC32_H_
-#define CEMUHOOK_EMBOSS_CRC32_H_
+#ifndef CEMUHOOK_EMBOSS_CRC32_ENGINE_H_
+#define CEMUHOOK_EMBOSS_CRC32_ENGINE_H_
 
 #include <memory>
 #include <vector>
@@ -16,4 +16,4 @@ class Crc32Engine {
 
 }  // namespace cemuhook_emboss
 
-#endif  // CEMUHOOK_EMBOSS_CRC32_H_
+#endif  // CEMUHOOK_EMBOSS_CRC32_ENGINE_H_
