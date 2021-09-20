@@ -32,5 +32,11 @@ cc_library(
 cc_binary(
     name = "protocol_test_main",
     srcs = ["protocol_test_main.cc"],
-    deps = [":protocol_emboss"],
+    deps = [
+        ":protocol_emboss",
+        "@com_google_absl//absl/base",
+        "@com_google_absl//absl/flags:flag",
+        "@com_google_absl//absl/flags:parse",
+        "@com_google_absl//absl/strings",
+    ],
 )

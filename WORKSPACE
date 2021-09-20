@@ -17,6 +17,13 @@ workspace(name = "com_webster_cemuhook_emboss")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
+    name = "com_google_absl",
+    commit = "de71511109d967000e68baedb75de104adb2b778",
+    remote = "https://github.com/abseil/abseil-cpp",
+    shallow_since = "1631884786 -0400",
+)
+
+git_repository(
     name = "com_google_emboss",
     commit = "32f309e34d93483644fdfce5fc3dede36aed66c0",
     remote = "https://github.com/google/emboss",
