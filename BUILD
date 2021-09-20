@@ -34,6 +34,7 @@ cc_binary(
     srcs = ["protocol_test_main.cc"],
     deps = [
         ":protocol_emboss",
+        "@com_github_google_glog//:glog",
         "@com_google_absl//absl/base",
         "@com_google_absl//absl/flags:flag",
         "@com_google_absl//absl/flags:parse",
